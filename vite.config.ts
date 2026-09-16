@@ -5,6 +5,9 @@ import cssInjectedByJs from 'vite-plugin-css-injected-by-js'
 import { plugins } from '@storyblok/field-plugin/vite'
 import fs from 'fs'
 
+const hasLocalCerts =
+  fs.existsSync('.certs/key.pem') && fs.existsSync('.certs/cert.pem')
+
 export default defineConfig({
   test: {
     globals: true,
@@ -25,9 +28,11 @@ export default defineConfig({
   server: {
     port: 8080,
     host: true,
-    https: {
-      key: fs.readFileSync('.certs/key.pem'),
-      cert: fs.readFileSync('.certs/cert.pem'),
-    },
+    ...(hasLocalCerts && {
+      https: {
+        key: fs.readFileSync('.certs/key.pem'),
+        cert: fs.readFileSync('.certs/cert.pem'),
+      },
+    }),
   },
 })
