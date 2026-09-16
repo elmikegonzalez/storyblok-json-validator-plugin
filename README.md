@@ -1,74 +1,79 @@
-# Storyblok Field Plugin in React
+# Storyblok JSON Validator Field Plugin
 
-This React project is designed to function as a Storyblok field plugin application. It showcases some fundamental features for field plugins, including value updates, modal toggling, and asset selection. The primary goal of this starter is to provide developers with a clear blueprint for creating custom field plugins.
+A Storyblok field plugin built with **React** that validates JSON content in real time. Uses the `useFieldPlugin` hook with `validateContent` to flag invalid JSON before it's saved to the Visual Editor.
 
-To remove the example code, simply delete the `src/components/` directory and alter the imports and returned `JSX` in `src/App.tsx`.
+## Features
 
-For those who prefer to work with JavaScript instead of TypeScript, they can rename src/App.tsx to src/App.jsx.
+- Real-time JSON validation with color-coded feedback (✓ Valid / ✗ Invalid)
+- Descriptive parser error messages
+- One-click Format button for pretty-printing
+- Built with React + TypeScript + Vite
+- Uses `validateContent` from `@storyblok/field-plugin/react`
 
-## Usage
+## Quick Start
 
-For development, run the application locally with
+```bash
+git clone https://github.com/elmikegonzalez/storyblok-json-validator-plugin.git
+cd storyblok-json-validator-plugin
+npm install
+```
 
-```shell
+### Local Development
+
+The Storyblok Sandbox runs on HTTPS, so your local dev server needs HTTPS too. Generate local certs with [mkcert](https://github.com/FiloSottile/mkcert):
+
+```bash
+mkcert -install
+mkdir .certs
+mkcert -key-file .certs/key.pem -cert-file .certs/cert.pem localhost
+```
+
+Then start the dev server:
+
+```bash
 npm run dev
 ```
 
-and open the [Sandbox](https://plugin-sandbox.storyblok.com/field-plugin/).
+Open the **Sandbox URL** printed in the terminal to test the plugin live:
 
-To build the project, run
+🧪 https://plugin-sandbox.storyblok.com/field-plugin?url=https://localhost:8080/
 
-```shell
-npm run build
-```
+### Deploy
 
-Deploy the field plugin with the CLI. Issue a [personal access token](https://app.storyblok.com/#/me/account?tab=token), rename `.env.local.example` to `.env.example`, open the file, set the value `STORYBLOK_PERSONAL_ACCESS_TOKEN`, and run
+Deploy the field plugin with the CLI. Issue a [personal access token](https://app.storyblok.com/#/me/account?tab=token) with **"Full user permission"** enabled, rename `.env.local.example` to `.env.local`, open the file, set the value of `STORYBLOK_PERSONAL_ACCESS_TOKEN`, and run:
 
-```shell
+```bash
 npm run deploy
 ```
 
-## Manifest File for Field Plugins
+> **Note:** A scoped token (even with all scopes selected) will return `403 — "This endpoint does not support this token type"`. The field plugin deploy endpoint requires the **"Full user permission (no scope/space restriction)"** toggle enabled on the PAT.
 
-The manifest file is a configuration that enhances the functionality of your field plugin. This JSON file, named `field-plugin.config.json` and located in your project's root folder, is optional but highly recommended.
+## How `validateContent` Works
 
-The manifest file allows you to configure [options](https://www.storyblok.com/docs/plugins/field-plugins/introduction#options) for your field plugin. When developing your field plugin with the [Sandbox](https://plugin-sandbox.storyblok.com/field-plugin/), the options are applied by default. Also, the deploy command automatically applies the options in production. So, you no longer need to configure the options manually.
+The core of the plugin is the `validateContent` option passed to `useFieldPlugin`:
 
-### Configuring a Manifest File
-
-The options list within the file `field-plugin.config.json` should consist of key-value objects representing the essential options required for your field plugin to function correctly, along with their corresponding values. This is an example of how it should be structured:
-
-```json
-{
-  "options": [
-    {
-      "name": "myPluginInitialValue",
-      "value": 100
+```tsx
+const plugin = useFieldPlugin({
+  validateContent: (content: unknown) => {
+    if (typeof content === 'string') {
+      try {
+        JSON.parse(content)
+        return { content }
+      } catch {
+        return { content, error: 'Invalid JSON' }
+      }
     }
-  ]
-}
+    return { content: '' }
+  },
+})
 ```
 
-Now, you just need to access these options in your code like in the example below:
+- Return `{ content }` when valid — content is sent to the Visual Editor
+- Return `{ content, error }` when invalid — the error is surfaced to the editor
 
-```js
-const { type, data, actions } = useFieldPlugin()
+## Resources
 
-console.log(data.options.myPluginInitialValue)
-```
-
-## Clean up the boilerplate
-
-To start from a blank state, remove the example component `<FieldPluginExample />` from `src/App.tsx` with `<FieldPlugin />`.
-
-## Continuous delivery
-
-Set up [continuous delivery](https://www.storyblok.com/docs/plugins/field-plugins/continuous-delivery) with the CLI. Define an environmental variable `STORYBLOK_PERSONAL_ACCESS_TOKEN`, and use the `--name` and `--skipPrompts` options as such:
-
-```shell
-npm run deploy --name $NAME --skipPrompts
-```
-
-## Design system
-
-[@storyblok/mui](https://www.npmjs.com/package/@storyblok/mui) contains components and a Storyblok theme for [MUI](https://mui.com/). To add it to this project, follow the instructions in the [README](https://github.com/storyblok/mui).
+- [Building a Field Plugin with React (Tutorial)](https://www.storyblok.com/tp/building-a-folder-select-field-using-the-field-plugin-cli)
+- [Field Plugin SDK docs (`useFieldPlugin` + `validateContent`)](https://www.storyblok.com/docs/libraries/js/field-plugin-sdk)
+- [Development & Deploy guide](https://www.storyblok.com/docs/plugins/field-plugins/development)
+- [Field Plugin SDK v1 announcement](https://dev.to/storyblok/field-plugin-sdk-v1-stable-release-30jn)
