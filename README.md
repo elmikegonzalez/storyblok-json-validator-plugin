@@ -34,9 +34,13 @@ Then start the dev server:
 npm run dev
 ```
 
-Open the **Sandbox URL** printed in the terminal to test the plugin live:
+Then open the [Storyblok Field Plugin Sandbox](https://plugin-sandbox.storyblok.com/field-plugin/). In the **Field Plugin URL** input, paste:
 
-🧪 https://plugin-sandbox.storyblok.com/field-plugin?url=https://localhost:8080/
+```
+https://localhost:8080/
+```
+
+Click the refresh icon next to the input, and the plugin will load in the Preview panel. You can now type JSON and see the validation in real time.
 
 ### Deploy
 
